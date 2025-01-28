@@ -1,5 +1,6 @@
 from django.shortcuts import render
 from django.http import HttpResponse
+from rest_framework.views import APIView
 
 from rest_framework import views, status, generics
 from rest_framework.response import Response
@@ -8,7 +9,7 @@ from rest_framework.pagination import PageNumberPagination
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework.filters import SearchFilter, OrderingFilter
 
-from .models import Organization, Receipt
+from .models import *
 from .serializers import (
     OrganizationGetSerializer,
     OrganizationPostSerializer,
@@ -99,7 +100,7 @@ class ReceiptView(generics.GenericAPIView):
         serializer = self.get_serializer(data=request.data)
         if serializer.is_valid():
             serializer.save()
-            return Response(serializer.data, status=201)
+            return Response({'message : Form Submitted Successfully!'},status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=400)
 
     def put(self, request, *args, **kwargs):
@@ -113,3 +114,10 @@ class ReceiptView(generics.GenericAPIView):
             serializer.save()
             return Response(serializer.data, status=200)
         return Response(serializer.errors, status=400)
+
+class Create_ReceiptView(APIView):
+    def get(self,request):
+        organization=Organization.objects.all()
+        serializer= OrganizationGetSerializer(organization,many=True)
+        return Response(serializer.data)
+    

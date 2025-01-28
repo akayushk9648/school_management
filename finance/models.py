@@ -1,6 +1,9 @@
 import uuid
 from django.db import models
 
+from core.models import Tenant
+from students.models import Student
+
 
 class Organization(models.Model):
     name = models.CharField(max_length=255, unique=True, help_text="Name of the organization issuing the receipt")
@@ -39,3 +42,19 @@ class Receipt(models.Model):
 
     def __str__(self):
         return f"Receipt {self.receipt_number} - {self.recipient_name}"
+
+
+
+
+
+class Fee(models.Model):
+    fee_id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    tenant = models.ForeignKey(Tenant, on_delete=models.CASCADE, related_name='fees')
+    student = models.ForeignKey(Student, on_delete=models.CASCADE, related_name='fees')
+    fee_type = models.CharField(max_length=50)
+    amount = models.DecimalField(max_digits=10, decimal_places=2)
+    due_date = models.DateField()
+    status = models.CharField(max_length=20, choices=[('Paid', 'Paid'), ('Pending', 'Pending')])
+
+    def __str__(self):
+        return f"Fee for {self.student.user.name} - {self.fee_type}"
