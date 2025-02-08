@@ -1,5 +1,7 @@
 from django.db import models
 import uuid
+from django.contrib.auth.hashers import make_password
+
 
 class Tenant(models.Model):
     tenant_id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
@@ -30,6 +32,9 @@ class User(models.Model):
     status = models.CharField(max_length=20, default='Active')
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
+    
+    def set_password(self, raw_password):
+        self.password = make_password(raw_password)
 
     def __str__(self):
         return self.name
@@ -44,3 +49,4 @@ class Log(models.Model):
 
     def __str__(self):
         return f"Log by {self.user.name if self.user else 'System'} at {self.timestamp}"
+
