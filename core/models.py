@@ -22,6 +22,8 @@ class User(models.Model):
         ('Teacher', 'Teacher'),
         ('Admin', 'Admin'),
     ]
+    Stat=[('Active','Active'),
+          ('Inactive','Inactive')]
 
     user_id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     tenant = models.ForeignKey(Tenant, on_delete=models.CASCADE, related_name='users')
@@ -29,7 +31,7 @@ class User(models.Model):
     email = models.EmailField(max_length=255, unique=True)
     password = models.CharField(max_length=255)
     role = models.CharField(max_length=50, choices=ROLES)
-    status = models.CharField(max_length=20, default='Active')
+    status = models.CharField(max_length=20, choices=Stat)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
     
