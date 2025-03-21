@@ -6,10 +6,14 @@ from rest_framework.permissions import IsAuthenticated, AllowAny
 from rest_framework.pagination import PageNumberPagination
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework.filters import SearchFilter, OrderingFilter
-from .models import Exam, Result
+from .models import Class, Subject
 from .serializers import (
-    ExamSerializer,  
-    ResultSerializer,  
+    ClassGetSerializer,
+    ClassPostSerializer,
+    ClassPutSerializer,
+    SubjectGetSerializer,
+    SubjectPostSerializer,
+    SubjectPutSerializer,
 )
 
 class CustomPagination(PageNumberPagination):
@@ -18,19 +22,19 @@ class CustomPagination(PageNumberPagination):
     max_page_size = 100
 
 def home(request):
-    return HttpResponse("Exam Management System")
+    return HttpResponse("School Management System")
 
-class ExamView(generics.GenericAPIView):
-    queryset = Exam.objects.all()
-    permission_classes = [IsAuthenticated]
+class ClassView(generics.GenericAPIView):
+    queryset = Class.objects.all()
+    permission_classes = [IsAuthenticated]  # You can change to AllowAny if needed
     filter_backends = [DjangoFilterBackend, SearchFilter, OrderingFilter]
-    filterset_fields = ['tenant', 'class_assigned', 'exam_name', 'start_date', 'end_date']
-    search_fields = ['exam_name']
-    ordering_fields = ['exam_name', 'start_date', 'end_date']
+    filterset_fields = ['class_name', 'section', 'tenant']
+    search_fields = ['class_name', 'section']
+    ordering_fields = ['class_name', 'section']
     pagination_class = CustomPagination
-    serializer_class = ExamSerializer
 
     def get(self, request, *args, **kwargs):
+        self.serializer_class = ClassGetSerializer
         queryset = self.filter_queryset(self.get_queryset())
         page = self.paginate_queryset(queryset)
         if page is not None:
@@ -40,6 +44,7 @@ class ExamView(generics.GenericAPIView):
         return Response(serializer.data)
 
     def post(self, request, *args, **kwargs):
+        self.serializer_class = ClassPostSerializer
         serializer = self.get_serializer(data=request.data)
         if serializer.is_valid():
             serializer.save()
@@ -47,27 +52,28 @@ class ExamView(generics.GenericAPIView):
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
     def put(self, request, *args, **kwargs):
+        self.serializer_class = ClassPutSerializer
         try:
-            exam_instance = Exam.objects.get(exam_id=request.data.get('exam_id'))
-        except Exam.DoesNotExist:
-            return Response({"error": "Exam not found"}, status=status.HTTP_404_NOT_FOUND)
-        serializer = self.get_serializer(exam_instance, data=request.data, partial=True)
+            class_instance = Class.objects.get(class_id=request.data.get('class_id'))
+        except Class.DoesNotExist:
+            return Response({"error": "Class not found"}, status=status.HTTP_404_NOT_FOUND)
+        serializer = self.get_serializer(class_instance, data=request.data, partial=True)
         if serializer.is_valid():
             serializer.save()
             return Response(serializer.data, status=status.HTTP_200_OK)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
-class ResultView(generics.GenericAPIView):
-    queryset = Result.objects.all()
-    permission_classes = [IsAuthenticated]
+class SubjectView(generics.GenericAPIView):
+    queryset = Subject.objects.all()
+    permission_classes = [IsAuthenticated]  # You can change to AllowAny if needed
     filter_backends = [DjangoFilterBackend, SearchFilter, OrderingFilter]
-    filterset_fields = ['tenant', 'student', 'exam', 'subject']
-    search_fields = ['student__user__name', 'exam__exam_name', 'subject__subject_name']
-    ordering_fields = ['marks_obtained', 'total_marks']
+    filterset_fields = ['subject_name', 'class_assigned', 'tenant']
+    search_fields = ['subject_name']
+    ordering_fields = ['subject_name']
     pagination_class = CustomPagination
-    serializer_class = ResultSerializer
 
     def get(self, request, *args, **kwargs):
+        self.serializer_class = SubjectGetSerializer
         queryset = self.filter_queryset(self.get_queryset())
         page = self.paginate_queryset(queryset)
         if page is not None:
@@ -77,6 +83,7 @@ class ResultView(generics.GenericAPIView):
         return Response(serializer.data)
 
     def post(self, request, *args, **kwargs):
+        self.serializer_class = SubjectPostSerializer
         serializer = self.get_serializer(data=request.data)
         if serializer.is_valid():
             serializer.save()
@@ -84,11 +91,12 @@ class ResultView(generics.GenericAPIView):
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
     def put(self, request, *args, **kwargs):
+        self.serializer_class = SubjectPutSerializer
         try:
-            result_instance = Result.objects.get(result_id=request.data.get('result_id'))
-        except Result.DoesNotExist:
-            return Response({"error": "Result not found"}, status=status.HTTP_404_NOT_FOUND)
-        serializer = self.get_serializer(result_instance, data=request.data, partial=True)
+            subject = Subject.objects.get(subject_id=request.data.get('subject_id'))
+        except Subject.DoesNotExist:
+            return Response({"error": "Subject not found"}, status=status.HTTP_404_NOT_FOUND)
+        serializer = self.get_serializer(subject, data=request.data, partial=True)
         if serializer.is_valid():
             serializer.save()
             return Response(serializer.data, status=status.HTTP_200_OK)
