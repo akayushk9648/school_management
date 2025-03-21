@@ -95,7 +95,7 @@ class AttendanceView(generics.GenericAPIView):
         self.serializer_class = StudentPutSerializer
         try:
             attendance = Attendance.objects.get(id=request.data.get('id'))
-        except Tenant.DoesNotExist:
+        except Attendance.DoesNotExist:
             return Response({"error": "Attendance not found"}, status=404)
         serializer = self.get_serializer(attendance, data=request.data, partial=True)
         if serializer.is_valid():
